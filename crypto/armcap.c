@@ -253,6 +253,10 @@ void OPENSSL_cpuid_setup(void)
 # if !defined(__APPLE__) && !defined(OSSL_IMPLEMENT_GETAUXVAL)
     struct sigaction ill_oact, ill_act;
     sigset_t oset;
+#  if defined(__HAIKU__)
+    /* Haiku arm64 reports undefined instructions as SIGBUS, not SIGILL. */
+    struct sigaction bus_oact;
+#  endif
 # endif
     static int trigger = 0;
 
@@ -370,6 +374,9 @@ void OPENSSL_cpuid_setup(void)
 
     sigprocmask(SIG_SETMASK, &ill_act.sa_mask, &oset);
     sigaction(SIGILL, &ill_act, &ill_oact);
+#  if defined(__HAIKU__)
+    sigaction(SIGBUS, &ill_act, &bus_oact);
+#  endif
 
     OPENSSL_armcap_P |= arm_probe_for(_armv7_neon_probe, ARMV7_NEON);
 
@@ -403,6 +410,9 @@ void OPENSSL_cpuid_setup(void)
      */
 
     sigaction(SIGILL, &ill_oact, NULL);
+#  if defined(__HAIKU__)
+    sigaction(SIGBUS, &bus_oact, NULL);
+#  endif
     sigprocmask(SIG_SETMASK, &oset, NULL);
 
 # endif /* __APPLE__, OSSL_IMPLEMENT_GETAUXVAL */

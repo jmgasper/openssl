@@ -7,5 +7,7 @@
  * https://www.openssl.org/source/license.html
  */
 
+#ifndef __ASSEMBLER__
 #include <sys/select.h>
 #include <sys/time.h>
+#endif
